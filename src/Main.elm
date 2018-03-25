@@ -16,7 +16,7 @@ type alias Model =
 
 main =
   Html.program
-    { init = init "dogs"
+    { init = init "frogs"
     , view = view
     , update = update
     , subscriptions = subscriptions
@@ -24,7 +24,7 @@ main =
 
 init : String -> (Model, Cmd Msg)
 init topic =
-  ( Model topic "waiting.gif" ["dogs", "cats"]
+  ( Model topic "waiting.gif" ["dogs", "cats", "frogs"]
   , getRandomGif topic
   )
 
@@ -33,7 +33,7 @@ getRandomGif topic =
   let
     url =
       "https://api.giphy.com/v1/gifs/random?api_key=dc6zaTOxFJmzC&tag=" ++ topic
-  in
+  in Debug.log ("url = " ++ url )
     Http.send NewGif (Http.get url decodeGifUrl)
 
 selection :   String -> Html Msg
@@ -50,13 +50,12 @@ bodyView model =
           [ text  model.topic ]
       , div [ class "pure-g" ]
           [ div [ class "l-box-lrg pure-u-1 pure-u-md-2-5" ]
-              [ Html.form [ class "pure-form pure-form" ]
+              [ Html.form [onSubmit MorePlease, class "pure-form pure-form" ]
                   [ fieldset []
                       [
-                        legend [][text "Select animal"]
-                        ,select []
+                       select []
                         fn,
-                        button [ onClick MorePlease, class "pure-button" ] [ text "More Please!" ]
+                        button [  class "pure-button" ] [ text "More Please!" ]
                       ]
                   ]
               ]
@@ -69,15 +68,15 @@ view model =
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
-  case msg of 
+  case Debug.log "update" msg of 
     MorePlease -> 
       (model, getRandomGif model.topic)
     NewGif (Ok newUrl) ->
-      (Model model.topic newUrl model.topics, Cmd.none)
+      ({model | gifUrl = newUrl}, Cmd.none)
     NewGif (Err _) ->
       (model, Cmd.none) 
     NewTopic ntopic  ->
-      ( {model | topic = ntopic}, getRandomGif model.topic)
+      ( {model | topic = ntopic}, getRandomGif ntopic)
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
